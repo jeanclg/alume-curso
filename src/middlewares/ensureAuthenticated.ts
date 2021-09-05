@@ -1,4 +1,3 @@
-import { intervalToDuration } from 'date-fns';
 import { Request, Response, NextFunction } from 'express';
 import { verify } from 'jsonwebtoken';
 
