@@ -1,19 +1,17 @@
 import { Router } from 'express';
-import multer from 'multer';
 import { container } from 'tsyringe';
-
+import multer from 'multer';
 import uploadConfig from '@config/upload';
 
 import CreateUserService from '@modules/users/services/CreateUserService';
-import UpdateUserAvatarService from '@modules/users/services/UpdateUserAvatarService';
-
 import ensureAuthenticated from '@modules/users/infra/http/middlewares/ensureAuthenticated';
+import UpdateUserAvatarService from '@modules/users/services/UpdateUserAvatarService';
 
 const usersRouter = Router();
 const upload = multer(uploadConfig);
 
-usersRouter.post('/', async (request, response) => {
-  const { name, email, password } = request.body;
+usersRouter.post('/', async (req, res) => {
+  const { name, email, password } = req.body;
 
   const createUser = container.resolve(CreateUserService);
 
@@ -23,39 +21,26 @@ usersRouter.post('/', async (request, response) => {
     password,
   });
 
-  // Com a atualização do TypeScript, isso se faz necessário
-  const userWithoutPassword = {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    created_at: user.created_at,
-    updated_at: user.updated_at,
-  };
+  delete user.password;
 
-  return response.json(userWithoutPassword);
+  return res.json(user);
 });
 
 usersRouter.patch(
   '/avatar',
   ensureAuthenticated,
   upload.single('avatar'),
-  async (request, response) => {
+  async (req, res) => {
     const updateUserAvatar = container.resolve(UpdateUserAvatarService);
-
     const user = await updateUserAvatar.execute({
-      user_id: request.user.id,
-      avatarFilename: request.file.filename,
+      user_id: req.user.id,
+      avatarFileName: req.file?.filename,
     });
 
-    const userWithoutPassword = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      created_at: user.created_at,
-      updated_at: user.updated_at,
-    };
+    delete user.password;
 
-    return response.json(userWithoutPassword);
+    return res.json(user);
   },
 );
+
 export default usersRouter;

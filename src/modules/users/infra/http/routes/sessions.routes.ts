@@ -5,8 +5,8 @@ import AuthenticateUserService from '@modules/users/services/AuthenticateUserSer
 
 const sessionsRouter = Router();
 
-sessionsRouter.post('/', async (request, response) => {
-  const { email, password } = request.body;
+sessionsRouter.post('/', async (req, res) => {
+  const { email, password } = req.body;
 
   const authenticateUser = container.resolve(AuthenticateUserService);
 
@@ -15,15 +15,9 @@ sessionsRouter.post('/', async (request, response) => {
     password,
   });
 
-  const userWithoutPassword = {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    created_at: user.created_at,
-    updated_at: user.updated_at,
-  };
+  delete user.password;
 
-  return response.json({ user: userWithoutPassword, token });
+  return res.json({ user, token });
 });
 
 export default sessionsRouter;
